@@ -1,6 +1,6 @@
 # OM Ansible
 
-Minimalistic, disposable Ops Manager environment with Ansible.
+Minimalistic, disposable Ops Manager environment with Ansible. ** Refactor to work with M1 **
 
 ## Quickstart
 1. Create a local directory to use as home for OM Ansible and clone this repository into that directory:
