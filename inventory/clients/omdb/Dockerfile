@@ -1,9 +1,8 @@
-#FROM almalinux:latest 
-FROM centos:7
+FROM almalinux:latest 
 
 ENV container=docker
 RUN yum install epel-release -y
-RUN  yum install -y openssl net-tools less initscripts supervisor openssh openssh-server openssh-clients sudo passwd sed tmux which vim-enhanced numactl rsync openldap-clients man
+RUN  yum install -y net-tools less initscripts supervisor openssh openssh-server openssh-clients sudo passwd sed tmux which vim-enhanced numactl rsync openldap-clients man
 RUN ssh-keygen -A
 RUN sed -i "s/#UsePrivilegeSeparation.*/UsePrivilegeSeparation no/g" /etc/ssh/sshd_config
 
@@ -30,7 +29,7 @@ COPY supervisord.conf /etc/supervisord.conf
 
 # setup ssh
 RUN mkdir /home/admin/.ssh
-ADD keys/id_rsa.pub /home/admin/.ssh/authorized_keys
+ADD id_rsa.pub /home/admin/.ssh/authorized_keys
 RUN chown -R admin:admin /home/admin && chmod 700 /home/admin/.ssh && chmod 640 /home/admin/.ssh/authorized_keys
 RUN systemctl enable sshd
 

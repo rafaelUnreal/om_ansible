@@ -11,10 +11,9 @@
     line: 'inet_protocols = ipv4'    
 
 - name: "Starting Postfix"
-  service:
-    name: postfix
-    enabled: yes
-    state: restarted
+  shell: "(supervisorctl start postfix)"
+  async: 10
+  poll: 0
 
 # Looking the Ops manager link based on the OM version requested in om_version
 
@@ -75,10 +74,7 @@
   yum:
     name: /tmp/mongodb-mms.rpm
     state: present
-- name: "Enable mongodb-mms service"
-  service:
-    name: mongodb-mms
-    enabled: yes
+    disable_gpg_check: true
 
 - name: "Create directory for head database"
   file: path=/data/head state=directory mode=0755 owner=mongodb-mms group=mongodb-mms
@@ -87,7 +83,7 @@
   file: path=/data/fsstore state=directory mode=0755 owner=mongodb-mms group=mongodb-mms
 
 # - name: Modify startup config to speedup process
-#   replace:
+#   replace
 #     path: /opt/mongodb/mms/conf/mms.conf
 #     regexp: '^JAVA_MMS_UI_OPTS="\${JAVA_MMS_UI_OPTS} -Dxgen\.webServerGzipEnabled=true.*'
 #     replace: 'JAVA_MMS_UI_OPTS="${JAVA_MMS_UI_OPTS} -Dxgen.webServerGzipEnabled=true -Dskip.migrate=true -Dskip.agent.download=true -Dskip.clear.lock=true"'
@@ -116,7 +112,7 @@
   replace:
     path: /opt/mongodb/mms/conf/conf-mms.properties
     regexp: '^mongo.mongoUri=.*'
-    replace: 'mongo.mongoUri=mongodb://omserver.omansible.int:27017'
+    replace: 'mongo.mongoUri=mongodb://omdb.omansible.int:27017'
 
 - name: Adding mms.fromEmailAddr
   lineinfile:
@@ -218,21 +214,10 @@
     content: "[Service]\nTimeoutStartSec=900"
     dest: "/etc/systemd/system/mongodb-mms.service.d/increase-timeout.conf"
 
-- name: Ensure mongod is in a running state
-  service:
-    name: mongod 
-    state: started
-  register: mongodserviceDetails
-  until: mongodserviceDetails.status.ActiveState == "active"
-  retries: 15
-  delay: 20
-
 - name: "Start mongodb-mms service"
-  systemd:
-    state: restarted
-    daemon_reload: yes
-    enabled: yes
-    name: mongodb-mms.service
+  shell: "(supervisorctl start mms)"
+  async: 10
+  poll: 0
 
 - name: "Wait for port 8080 to become available"
   wait_for:
@@ -321,10 +306,9 @@
   when: om_version is version_compare("4.4",">=")
 
 - name: "Restarting Ops Manager after adding the whitelist for API user (workaround for OM > 4.4 and < 4.4.15"
-  service:
-    name: mongodb-mms
-    enabled: yes
-    state: restarted
+  shell: "(supervisorctl restart mms)"
+  async: 10
+  poll: 0
   when: om_version is defined and om_version is version_compare("4.4",">=") and om_version is version_compare("4.4.15","<")
 
 - name: "Wait for port 8080 to become available"

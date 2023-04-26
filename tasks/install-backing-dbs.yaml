@@ -19,7 +19,6 @@
         - cyrus-sasl-gssapi
         - cyrus-sasl-plain
         - krb5-libs
-        - libcurl
         - libpcap
         - lm_sensors-libs
         - net-snmp
@@ -27,7 +26,6 @@
         - openldap
         - openssl
         - rpm-libs
-        - tcp_wrappers-libs
 - name: "Install mongodb"
   yum: 
     name: mongodb-org
@@ -59,10 +57,6 @@
   copy:
     content: "[Service]\nTimeoutStartSec=900\nType=forking"
     dest: "/etc/systemd/system/mongod.service.d/additional.conf"
-- name: "Enable mongod service"
-  service:
-    name: mongod
-    enabled: yes
 - name: "Set SELinux to permissive"
   selinux:
     policy: targeted
@@ -73,5 +67,6 @@
   become: yes
   when: vms
 - name: "Start mongod for the Application Database"
-  service: name=mongod state=started
-  become: yes
+  shell: "(supervisorctl start mongod)"
+  async: 10
+  poll: 0

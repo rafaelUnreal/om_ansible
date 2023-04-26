@@ -1,4 +1,4 @@
-version: "2.4"
+version: "3"
 
 services:
   provisioner:
@@ -13,12 +13,31 @@ services:
         aliases:
           - provisioner.omansible.int
         ipv4_address: 192.168.1.99
+  omdb:
+    build: ./inventory/clients/omdb
+    hostname: omdb.omansible.int
+    domainname: omansible.int
+    container_name: omdb
+#   mem_limit: 16g
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    ports:
+      - "22"
+    privileged: true
+    networks:
+      front:
+        ipv4_address: 192.168.1.140
+    security_opt:
+      - seccomp:unconfined
 
   omserver:
     build: ./inventory/clients
     hostname: omserver.omansible.int
     domainname: omansible.int
     container_name: omserver
+    platform: linux/amd64
 #   mem_limit: 16g
     cap_add:
       - SYS_ADMIN
